@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>El Cuerpo en el Enjambre Digital – Raymundo Uziel Gomez Carrera</title>
+<style>
+:root{--bg:#f6faf9;--card:#fff;--tx:#0f172a;--mu:#64748b;--ln:#cbd5e1;--bd:#0f766e;--rose:#be123c;--em:#047857;--sky:#0369a1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0b0f17;--card:#111827;--tx:#f1f5f9;--mu:#94a3b8;--ln:#334155;--bd:#2dd4bf;--rose:#fb7185;--em:#34d399;--sky:#38bdf8;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#0b0f17;--card:#111827;--tx:#f1f5f9;--mu:#94a3b8;--ln:#334155;--bd:#2dd4bf;--rose:#fb7185;--em:#34d399;--sky:#38bdf8;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.5 Georgia,serif;-webkit-user-select:none;user-select:none}
+main{max-width:1000px;margin:0 auto;padding:14px}
+h1{font-size:21px;margin:4px 0 2px;color:var(--bd)}p.s{margin:0 0 4px;color:var(--mu);font-size:13px}p.by{margin:0 0 10px;font-size:13px}
+.box{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:8px}
+.stage{position:relative;width:100%;aspect-ratio:840/585;overflow:hidden;border-radius:10px;background:radial-gradient(circle at 50% 45%,rgba(56,189,248,.10),transparent 65%)}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;color:var(--mu);font:14px system-ui,sans-serif;pointer-events:none}
+#words button{position:absolute;transform:translate(-50%,-50%);font:600 clamp(10px,1.7vw,14px) system-ui,sans-serif;background:color-mix(in srgb,var(--card) 80%,transparent);border:1px solid var(--ln);border-radius:999px;padding:3px 10px;cursor:pointer;white-space:nowrap;color:var(--sky)}
+#words button.r{color:var(--rose)}#words button.g{color:var(--em);border-color:var(--em)}
+#words button.sel{outline:2px solid currentColor;outline-offset:1px}
+.bar{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+button.c{font:inherit;font-size:13px;background:var(--card);color:var(--tx);border:1px solid var(--ln);border-radius:999px;padding:6px 11px;cursor:pointer}
+button.c.on{border-color:var(--bd);color:var(--bd)}
+#card{margin-top:10px}#card h2{margin:0 0 6px;font-size:18px}#card .t{display:inline-block;font:11px monospace;border:1px solid;border-radius:6px;padding:1px 7px;margin-bottom:6px}
+#card .sy{border-top:1px solid var(--ln);margin-top:8px;padding-top:8px;font-size:13px;color:var(--mu)}#card b{color:var(--tx)}
+.apa{font-size:12px;color:var(--mu);margin-top:12px}
+@media(min-width:820px){.g{display:grid;grid-template-columns:7fr 5fr;gap:14px;align-items:start}#card{margin-top:0}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head><body><main>
+<h1>El Cuerpo en el Enjambre Digital</h1>
+<p class="s">Toca una palabra para animar al avatar 3D. Arrastra para girarlo y pellizca (o usa la rueda) para acercarte.</p>
+<p class="by"><b>Hecho por Raymundo Uziel Gomez Carrera</b> · CONALEP</p>
+<div class="g"><div>
+<div class="box"><div class="stage" id="stage"><canvas id="cv"></canvas><div id="words"></div><div id="msg">Visualizador 3D listo. Haz clic en las herramientas o controles para interactuar.</div></div>
+<div class="bar"><button class="c" id="rs">↺ Reiniciar</button><button class="c" id="tour">▶ Recorrido automático</button><button class="c" id="th">◐ Tema</button></div></div></div>
+<div><div class="box" id="card">
+  <h2>Reinterpretación Bio-artística</h2>
+  <span class="t">CONALEP 2026</span>
+  <p>Obra artística e interactiva digital que explora la hiperconectividad y el concepto del cuerpo humano en el espacio virtual.</p>
+  <div class="sy"><b>Instrucciones:</b> Usa los botones interactivos en la barra inferior para reiniciar la cámara, alternar temas visuales o iniciar un recorrido guiado.</div>
+</div>
+<p class="apa">Gómez Carrera, R. U. (2026). <i>El cuerpo en el enjambre digital: Reinterpretación bio-artística de la hiperconectividad</i> [Obra artística digital]. CONALEP.</p></div></div>
+</main>
+
+<script>
+// Inicialización del visor e interacción 3D básica con Three.js
+const container = document.getElementById('stage');
+const canvas = document.getElementById('cv');
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+camera.position.set(0, 1.2, 3);
+
+const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+renderer.setSize(container.clientWidth, container.clientHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
+
+const dirLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
+dirLight.position.set(2, 4, 2);
+scene.add(dirLight);
+
+// Representación conceptual del avatar 3D/Cuerpo digital
+const group = new THREE.Group();
+
+const bodyGeo = new THREE.CylinderGeometry(0.2, 0.1, 0.8, 16);
+const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0f766e, wireframe: true });
+const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+bodyMesh.position.y = 0.6;
+group.add(bodyMesh);
+
+const headGeo = new THREE.SphereGeometry(0.18, 16, 16);
+const headMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, wireframe: true });
+const headMesh = new THREE.Mesh(headGeo, headMat);
+headMesh.position.y = 1.15;
+group.add(headMesh);
+
+// Esfera central luminosa (Enjambre)
+const coreGeo = new THREE.IcosahedronGeometry(0.4, 2);
+const coreMat = new THREE.MeshStandardMaterial({ color: 0xfb7185, wireframe: true, transparent: true, opacity: 0.7 });
+const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+coreMesh.position.y = 0.7;
+group.add(coreMesh);
+
+scene.add(group);
+
+// Controles de interacción manual
+let isDragging = false;
+let previousMousePosition = { x: 0, y: 0 };
+
+canvas.addEventListener('pointerdown', (e) => {
+  isDragging = true;
+  previousMousePosition = { x: e.clientX, y: e.clientY };
+});
+
+canvas.addEventListener('pointermove', (e) => {
+  if (!isDragging) return;
+  const deltaX = e.clientX - previousMousePosition.x;
+  const deltaY = e.clientY - previousMousePosition.y;
+
+  group.rotation.y += deltaX * 0.01;
+  group.rotation.x += deltaY * 0.01;
+
+  previousMousePosition = { x: e.clientX, y: e.clientY };
+});
+
+window.addEventListener('pointerup', () => { isDragging = false; });
+
+canvas.addEventListener('wheel', (e) => {
+  camera.position.z += e.deltaY * 0.002;
+  camera.position.z = Math.max(1.2, Math.min(6, camera.position.z));
+});
+
+// Botones de interacción
+let isTouring = false;
+document.getElementById('rs').addEventListener('click', () => {
+  group.rotation.set(0, 0, 0);
+  camera.position.set(0, 1.2, 3);
+  isTouring = false;
+  document.getElementById('tour').classList.remove('on');
+});
+
+document.getElementById('tour').addEventListener('click', (e) => {
+  isTouring = !isTouring;
+  e.target.classList.toggle('on', isTouring);
+});
+
+document.getElementById('th').addEventListener('click', () => {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+});
+
+// Bucle de renderizado
+function animate() {
+  requestAnimationFrame(animate);
+  coreMesh.rotation.y += 0.01;
+  coreMesh.rotation.x += 0.005;
+
+  if (isTouring) {
+    group.rotation.y += 0.015;
+  }
+
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = container.clientWidth / container.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(container.clientWidth, container.clientHeight);
+});
+</script>
+</body></html>
